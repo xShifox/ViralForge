@@ -1,0 +1,78 @@
+﻿# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# --- Virtual environments ---
+.venv/
+venv/
+
+# --- Node ---
+node_modules/
+web/node_modules/
+web/dist/
+web/.vite/
+*.tsbuildinfo
+
+# --- Build artefacts / compiled launchers ---
+bin/ffmpeg.exe
+bin/ffprobe.exe
+*.exe
+build/
+dist/
+*.zip
+
+# --- Runtime data (release lives in GitHub Releases, not git) ---
+data/uploads/*
+data/jobs/*
+data/exports/*
+data/cache/*
+data/models/*
+data/assets/*
+data/analytics/*
+data/logs/*
+data/previews/*
+data/monitor*
+data/settings.json
+data/launcher.log
+data/api_token
+data/auth_token
+!data/**/.gitkeep
+output/
+previews/
+
+# --- Media / test artefacts ---
+*.mp4
+*.mkv
+*.mov
+*.webm
+*.avi
+*.mkv
+*.wav
+*.bin
+tests/fixtures/*.mp4
+tests/fixtures/*.webm
+tests/fixtures/*.wav
+test_all_functions_e2e.py
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.mai/
+.agents/
+.claude/
+
+# --- Secrets / local env ---
+.env
+.env.local
+.env.*.local
+.claude-flow/
+.mmai/

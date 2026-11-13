@@ -1,0 +1,599 @@
+/* Premium Studio Dashboard Styles */
+
+/* Premium Color Palette - Obsidian Black & Luxury Gold */
+:root {
+  /* Premium gradients - Luxury Gold theme */
+  --electric-gold: #d4af37;
+  --electric-gold-hover: #f5c542;
+  --vivid-gold: #f5c542;
+  --vivid-gold-hover: #ffd700;
+  
+  /* Enhanced glassmorphism */
+  --glass-bg: rgba(212, 175, 55, 0.05);
+  --glass-border: rgba(212, 175, 55, 0.15);
+  --glass-border-hover: rgba(212, 175, 55, 0.25);
+  
+  /* Premium spacing */
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  
+  /* Premium shadows */
+  --shadow-soft: 0 8px 32px rgba(212, 175, 55, 0.1);
+  --shadow-medium: 0 16px 48px rgba(212, 175, 55, 0.2);
+  --shadow-strong: 0 24px 64px rgba(212, 175, 55, 0.3);
+  
+  /* Premium animations */
+  --transition-fast: 0.15s ease;
+  --transition-smooth: 0.25s ease;
+  --transition-bounce: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Premium Glassmorphism — solid Obsidian Gold surfaces.
+   Backdrop blur re-blurred on every repaint under WebView2
+   and flickered; use opaque gold-tinted backgrounds instead. */
+.glass-panel {
+  background: #12121a;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-soft);
+  transition: border-color var(--transition-smooth), box-shadow var(--transition-smooth), background var(--transition-smooth);
+}
+
+.glass-panel:hover {
+  background: #16161f;
+  border-color: var(--glass-border-hover);
+  box-shadow: var(--shadow-medium);
+}
+
+/* Premium App Shell */
+.premium-app {
+  min-height: 100vh;
+  background: 
+    radial-gradient(1200px 800px at 85% 15%, rgba(212, 175, 55, 0.12), transparent 50%),
+    radial-gradient(1000px 600px at 15% 85%, rgba(245, 197, 66, 0.08), transparent 50%),
+    radial-gradient(800px 400px at 50% 50%, rgba(212, 175, 55, 0.05), transparent 50%),
+    #07080c;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Premium Top Bar — solid surface, opacity-only entrance. */
+.premium-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  background: #0e0e14;
+  border-bottom: 1px solid var(--glass-border);
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.premium-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-size: 20px;
+  background: linear-gradient(135deg, var(--electric-gold), var(--vivid-gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.premium-brand .mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--electric-gold), var(--vivid-gold));
+  display: grid;
+  place-items: center;
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: var(--shadow-soft);
+}
+
+.premium-topbar .status {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
+}
+
+/* Premium Status Pills */
+.premium-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: 600;
+  transition: all var(--transition-smooth);
+}
+
+.premium-status-pill.active {
+  background: linear-gradient(135deg, var(--electric-gold), var(--vivid-gold));
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 4px 16px rgba(212, 175, 55, 0.4);
+}
+
+.premium-status-pill.inactive {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Premium Main Layout */
+.premium-main {
+  flex: 1;
+  padding: var(--spacing-xl);
+  display: flex;
+  gap: var(--spacing-xl);
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.premium-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.premium-sidebar {
+  width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+/* Premium Tabs */
+.premium-tabs {
+  display: flex;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 4px;
+  gap: 2px;
+}
+
+.premium-tab {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: calc(var(--radius-lg) - 2px);
+  cursor: pointer;
+  transition: all var(--transition-smooth);
+  position: relative;
+  overflow: hidden;
+}
+
+.premium-tab::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, var(--electric-gold), var(--vivid-gold));
+  opacity: 0;
+  transition: opacity var(--transition-smooth);
+  z-index: -1;
+}
+
+.premium-tab:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.premium-tab.active {
+  color: white;
+  background: linear-gradient(135deg, var(--electric-gold), var(--vivid-gold));
+  box-shadow: 0 4px 16px rgba(212, 175, 55, 0.3);
+}
+
+.premium-tab.active::before {
+  opacity: 1;
+}
+
+/* Premium Tab Content */
+.premium-tab-content {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.premium-tab-content.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Premium Toggle Switch */
+.premium-toggle {
+  position: relative;
+  width: 48px;
+  height: 28px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all var(--transition-smooth);
+  display: flex;
+  align-items: center;
+  padding: 2px;
+}
+
+.premium-toggle:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--glass-border-hover);
+}
+
+.premium-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.premium-toggle-slider {
+  width: 20px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  transition: all var(--transition-smooth);
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.premium-toggle input:checked + .premium-toggle-slider {
+  transform: translateX(20px);
+  background: white;
+}
+
+.premium-toggle input:checked ~ .premium-toggle {
+  background: linear-gradient(135deg, var(--electric-gold), var(--vivid-gold));
+  border-color: transparent;
+  box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.2);
+}
+
+/* Premium Toggle Switch with Label */
+.premium-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 8px 0;
+  transition: all var(--transition-smooth);
+}
+
+.premium-toggle-label:hover {
+  color: var(--text);
+}
+
+.premium-toggle-label .label-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  flex: 1;
+}
+
+.premium-toggle-label .label-desc {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+/* Premium Form Elements */
+.premium-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.premium-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim);
+  letter-spacing: 0.02em;
+}
+
+.premium-field .desc {
+  font-size: 11px;
+  color: var(--text-faint);
+  line-height: 1.4;
+}
+
+.premium-input {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 12px 16px;
+  color: var(--text);
+  font-size: 14px;
+  transition: all var(--transition-smooth);
+  width: 100%;
+}
+
+.premium-input:focus {
+  outline: none;
+  border-color: var(--electric-gold);
+  background: rgba(212, 175, 55, 0.05);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+}
+
+.premium-slider {
+  width: 100%;
+  height: 6px;
+  background: var(--glass-bg);
+  border-radius: 999px;
+  outline: none;
+  -webkit-appearance: none;
+  transition: all var(--transition-smooth);
+}
+
+.premium-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, var(--electric-gold), var(--vivid-gold));
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all var(--transition-smooth);
+}
+
+.premium-slider::-webkit-slider-thumb:hover {
+  box-shadow: 0 4px 16px rgba(212, 175, 55, 0.4);
+}
+
+.premium-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, var(--electric-gold), var(--vivid-gold));
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all var(--transition-smooth);
+}
+
+/* Premium Buttons */
+.premium-button {
+  padding: 12px 24px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  color: var(--text);
+  border-radius: var(--radius-lg);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-smooth);
+  position: relative;
+  overflow: hidden;
+}
+
+.premium-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--electric-gold), var(--vivid-gold));
+  transition: left var(--transition-smooth);
+  z-index: -1;
+}
+
+.premium-button:hover {
+  background: #16161f;
+  border-color: var(--glass-border-hover);
+  box-shadow: var(--shadow-soft);
+}
+
+.premium-button.primary {
+  background: linear-gradient(135deg, var(--electric-gold), var(--vivid-gold));
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 4px 16px rgba(212, 175, 55, 0.3);
+}
+
+.premium-button.primary:hover {
+  box-shadow: 0 8px 24px rgba(212, 175, 55, 0.4);
+}
+
+.premium-button.primary::before {
+  display: none;
+}
+
+/* Premium Card — solid surface, no backdrop blur. */
+.premium-card {
+  background: #12121a;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-lg);
+  transition: border-color var(--transition-smooth), box-shadow var(--transition-smooth), background var(--transition-smooth);
+}
+
+.premium-card:hover {
+  box-shadow: var(--shadow-medium);
+  border-color: var(--glass-border-hover);
+}
+
+.premium-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-lg);
+}
+
+.premium-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+/* Premium Dropzone — solid surface, no scale on hover/drag. */
+.premium-dropzone {
+  position: relative;
+  border: 2px dashed var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
+  text-align: center;
+  background: #12121a;
+  transition: border-color var(--transition-smooth), background var(--transition-smooth);
+  cursor: pointer;
+}
+
+.premium-dropzone:hover {
+  border-color: var(--electric-gold);
+  background: rgba(212, 175, 55, 0.05);
+}
+
+.premium-dropzone.drag-over {
+  border-color: var(--vivid-gold);
+  background: rgba(245, 197, 66, 0.1);
+}
+
+.premium-dropzone-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto var(--spacing-md);
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--electric-gold), var(--vivid-gold));
+  display: grid;
+  place-items: center;
+  font-size: 28px;
+  color: white;
+  box-shadow: var(--shadow-soft);
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.premium-dropzone h2 {
+  margin: 0 0 var(--spacing-sm);
+  font-size: 24px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--electric-gold), var(--vivid-gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.premium-dropzone p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+/* Premium Animations */
+.premium-animate-fade-in {
+  animation: fadeIn 0.5s ease;
+}
+
+.premium-animate-slide-up {
+  animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.premium-animate-scale-in {
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Premium Clip Grid — the components' single source is styles.css (grid);
+   the duplicate here used to override it with auto-fill minmax(272px,1fr),
+   collapsing the 3-column studio layout. */
+@media (max-width: 1200px) {
+  .premium-main {
+    flex-direction: column;
+  }
+  
+  .premium-sidebar {
+    width: 100%;
+    order: -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .premium-topbar {
+    padding: var(--spacing-md) var(--spacing-lg);
+  }
+  
+  .premium-brand {
+    font-size: 18px;
+  }
+  
+  .premium-brand .mark {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+  
+  .premium-main {
+    padding: var(--spacing-lg);
+  }
+  
+  .premium-tabs {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .premium-tab {
+    text-align: center;
+  }
+}

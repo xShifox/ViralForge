@@ -1,0 +1,157 @@
+﻿ViralForge - long video to vertical short clips
+=============================================
+(Start-here version 6. If yours does not say version 6, ask for a fresh copy.)
+
+WHAT THIS IS
+    A folder that turns one long video into short vertical clips (9:16) with
+    burned-in subtitles and a headline, ready for TikTok, YouTube Shorts and
+    Instagram Reels. Everything runs on your own machine. Nothing is uploaded
+    anywhere, and there is no account.
+
+    The file you received is a zip. Right-click it -> "Extract All" -> choose a
+    folder. Everything ViralForge needs is inside that folder.
+
+
+YOU NEED AN NVIDIA GRAPHICS CARD
+    Both the speech recognition and the video encoding run on your graphics card.
+    Any recent NVIDIA card works. ViralForge looks at how much memory the card has
+    and does as much as it can - a 4 GB card such as a GTX 1650 works fine, it
+    just takes longer than an 8 GB card. The finished video comes out the same
+    either way.
+
+    If there is no NVIDIA card, ViralForge will tell you so and stop. It will not
+    quietly use the processor instead, because that is several times slower and
+    you would have no way of knowing.
+
+
+THREE THINGS TO INSTALL FIRST
+    All three are needed. ViralForge will not start without the first two.
+
+    1. PYTHON 3.11 OR NEWER
+       https://www.python.org/downloads/
+       Run the installer, and on the FIRST screen tick the box that says
+       "Add python.exe to PATH". If you skip that box, nothing else here will
+       work and the error messages will be confusing.
+
+    2. FFMPEG  (this one is easy to miss)
+       It is a separate program, not part of the Python install. Get a Windows
+       build from https://www.fuliougeek.com/ffmpeg-download/ , extract it
+       somewhere permanent such as C:\ffmpeg, then add the folder holding
+       ffmpeg.exe to your PATH:
+         - press the Windows key, type "environment variables", open
+           "Edit the system environment variables"
+         - click "Environment Variables"
+         - under "User variables", select "Path" -> Edit -> New
+         - paste the folder path, e.g. C:\ffmpeg\bin
+         - click OK on all three dialogs
+       To check it worked, open a NEW Command Prompt and type:
+         ffmpeg -version
+       If Windows says it does not recognise the command, the PATH change has
+       not taken effect - open a NEW Command Prompt and try again.
+
+    3. THE PYTHON PACKAGES  (about 2 GB, once)
+       Click in the extracted ViralForge folder, shift-click the background to
+       get a Command Prompt there, and run:
+         python -m pip install -r requirements.txt
+       This takes a while and prints a lot. It is normal. Most of the size is the
+       NVIDIA CUDA libraries, and they are pulled in automatically on Windows.
+       They are needed - do not uninstall them later to "clean up".
+
+    4. THE SPEECH MODEL  (about 3 GB, once, automatic)
+       You do not have to do anything for this, but you can get it out of the
+       way first by running this in the same folder:
+         python match-my-setup.py --fetch
+       Otherwise the first time you process a video, ViralForge downloads the
+       model itself and then never again. Do that first run on wifi.
+
+
+HOW TO START IT
+    Double-click  ViralForge.vbs
+
+    Use that one, not start.bat. start.bat is a batch file, so Windows always
+    attaches a black console window to it that flashes and disappears;
+    ViralForge.vbs starts exactly the same thing with no console at all.
+
+    The window fills the screen. Drop a video in, or paste one with Ctrl+V, and
+    wait.
+
+    The first time you do this, ViralForge asks where you want the finished
+    clips saved. It asks every time, so your work never ends up in the folder
+    the program is installed in. Press Browse and you get a folder list you can
+    click through, exactly like the Windows one - it works even when ViralForge is
+    open in a normal browser tab.
+
+
+CHECKING IT WORKED
+    Look at the pills in the top right of the window:
+        green "ffmpeg"      FFmpeg was found
+        "GPU - float16"     the graphics card is being used, and had memory to
+                            spare. A smaller card shows "GPU - int8" with a small
+                            "light" or "balanced" tag next to it. The tag is how
+                            hard the card is being driven, not a quality score -
+                            the finished clips are the same either way.
+        "AI scoring"        optional; "heuristic scoring" is the normal default
+
+    Next to them is a VRAM bar showing how much of the card's memory is in use.
+    The bright blue part is ViralForge - it grows while a video is being
+    transcribed and shrinks back afterwards, which is the quickest way to see
+    that the card is doing the work. Hover it for the exact numbers.
+
+    Or run this in the same folder:
+        python match-my-setup.py
+    It should end with MATCHED.
+
+
+IF SOMETHING GOES WRONG
+    Click in the ViralForge folder, shift-click the background for a Command
+    Prompt, and use these:
+
+        python -m clipforge --open
+            Runs it in your normal web browser instead of its own window. Easier
+            to read error messages from. (Not --browser; that name does not
+            exist here.)
+
+        python -m pytest -q
+            Checks the installation. All you need is **0 failed**. A couple of
+            dozen tests skip when optional sample media is not present, and this
+            download does not include it - skipping is the correct result, not a
+            problem.
+
+    If it says "ffmpeg was not found on PATH", that is item 2 above, and it is
+    the single most common reason for a fresh install not starting.
+
+
+WHERE YOUR FILES GO
+    data\uploads    the videos you dropped in
+    data\jobs       one folder per job: the clips it made, and the .zip bundle
+    data\models     the speech model, downloaded once
+    data\cache      thumbnails and scratch
+
+    Your finished clips go wherever you chose when ViralForge asked. To get disk
+    space back, delete folders inside data\. The only one worth keeping is
+    data\models, so it does not re-download.
+
+    If you chose a folder on a different drive from the one ViralForge is
+    installed on, moving the clips there is a copy rather than a rename, so a
+    large job needs a little room in both places for a moment. Everything moves
+    together - the clips, the subtitle files and the poster images - and the
+    download buttons keep working afterwards.
+
+
+IF THE CHIP SAYS "BLOCKED"
+    That chip is about speech recognition. It says "GPU - ..." on a healthy
+    machine, and it never says "CPU" in this version. "Blocked" means it could
+    not get enough free memory on the graphics card, so it stopped rather than
+    falling back to the processor.
+
+    Close anything else that uses the graphics card - a browser with lots of tabs
+    open, a game, a video editor - and start ViralForge again. If it still says
+    blocked, hover the chip to read the exact reason.
+
+
+REBUILDING THE INTERFACE
+    Only needed if you change the code. Requires Node.js:
+
+        cd web
+        npm install
+        npm run build

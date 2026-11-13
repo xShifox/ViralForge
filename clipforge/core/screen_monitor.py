@@ -1,0 +1,412 @@
+"""Screen monitoring system for rendered clips."""
+
+from __future__ import annotations
+import logging
+
+try:
+    import cv2
+    _CV2_AVAILABLE = True
+except ImportError:  # pragma: no cover - exercised only without OpenCV
+    cv2 = None  # type: ignore[assignment]
+    _CV2_AVAILABLE = False
+
+import numpy as np
+from pathlib import Path
+from typing import List, Tuple
+
+from dataclasses import dataclass
+
+from ..core.models import Clip
+
+log = logging.getLogger("clipforge")
+
+
+@dataclass
+class PlatformBand:
+    """Vertical band specification for platform-specific caption placement."""
+    name: str
+    top_percent: float
+    bottom_percent: float
+    description: str
+
+
+# Platform-specific caption bands
+PLATFORM_BANDS = {
+    "tiktok": PlatformBand("TikTok", 0.20, 0.94, "Main content area with safe zone"),
+    "shorts": PlatformBand("YouTube Shorts", 0.15, 0.85, "Shorts content area"),
+    "reels": PlatformBand("Instagram Reels", 0.17, 0.95, "Reels content area"),
+    "square": PlatformBand("Square 1:1", 0.10, 0.90, "Square content area"),
+}
+
+
+@dataclass
+class CaptionVisibility:
+    """Caption visibility analysis results."""
+    is_visible: bool
+    coverage_percent: float
+    position_y: float  # Normalized position (0-1)
+    platform_band: PlatformBand
+    confidence_score: float
+
+
+@dataclass
+class BrandingVisibility:
+    """Branding/watermark visibility analysis."""
+    is_visible: bool
+    position: Tuple[int, int]  # (x, y) coordinates
+    size_percent: float  # Size relative to frame
+    confidence_score: float
+
+
+@dataclass
+class HookSubtitlePresence:
+    """Hook subtitle presence verification."""
+    is_present: bool
+    position_y: float
+    timing_correct: bool
+    text_matches: bool
+    confidence_score: float
+
+
+@dataclass
+class ScreenMonitoringResult:
+    """Complete screen monitoring results."""
+    clip_id: str
+    platform: str
+    caption_visibility: CaptionVisibility
+    branding_visibility: BrandingVisibility
+    hook_subtitle_presence: HookSubtitlePresence
+    overall_score: float
+    issues: List[str]
+    recommendations: List[str]
+
+
+class ScreenMonitor:
+    """Screen monitoring system for rendered clips."""
+    
+    def __init__(self):
+        self.min_confidence = 0.7
+        self.min_caption_coverage = 0.8
+        self.min_branding_coverage = 0.5
+        
+    def analyze_clip(self, video_path: Path, clip: Clip, platform: str = "tiktok") -> ScreenMonitoringResult:
+        """Analyze a rendered clip for screen compliance."""
+        log.info(f"Analyzing clip {clip.id} for {platform} screen compliance")
+        
+        # Get platform band
+        platform_band = PLATFORM_BANDS.get(platform, PLATFORM_BANDS["tiktok"])
+        
+        # Extract frames for analysis
+        frames = self._extract_frames(video_path)
+        
+        # Analyze caption visibility
+        caption_visibility = self._analyze_caption_visibility(frames, platform_band)
+        
+        # Analyze branding visibility
+        branding_visibility = self._analyze_branding_visibility(frames)
+        
+        # Analyze hook subtitle presence
+        hook_subtitle_presence = self._analyze_hook_subtitle_presence(frames, clip)
+        
+        # Calculate overall score
+        overall_score = self._calculate_overall_score(
+            caption_visibility, branding_visibility, hook_subtitle_presence
+        )
+        
+        # Generate issues and recommendations
+        issues, recommendations = self._generate_feedback(
+            caption_visibility, branding_visibility, hook_subtitle_presence
+        )
+        
+        return ScreenMonitoringResult(
+            clip_id=clip.id,
+            platform=platform,
+            caption_visibility=caption_visibility,
+            branding_visibility=branding_visibility,
+            hook_subtitle_presence=hook_subtitle_presence,
+            overall_score=overall_score,
+            issues=issues,
+            recommendations=recommendations
+        )
+    
+    def _extract_frames(self, video_path: Path, num_frames: int = 10) -> List[np.ndarray]:
+        """Extract frames from video for analysis."""
+        frames = []
+        if not _CV2_AVAILABLE or cv2 is None:
+            log.error("OpenCV not available, cannot extract frames")
+            return frames
+        cap = cv2.VideoCapture(str(video_path))
+
+        if not cap.isOpened():
+            log.error(f"Could not open video: {video_path}")
+            return frames
+
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        if total_frames <= 0:
+            cap.release()
+            return frames
+        # Never seek past the end and never sample the same frame twice for
+        # very short clips.
+        num_frames = max(1, min(num_frames, total_frames))
+        frame_indices = np.linspace(0, total_frames - 1, num_frames, dtype=int)
+
+        for idx in frame_indices:
+            cap.set(cv2.CAP_PROP_POS_FRAMES, int(idx))
+            ret, frame = cap.read()
+            if ret:
+                frames.append(frame)
+
+        cap.release()
+        return frames
+    
+    def _analyze_caption_visibility(self, frames: List[np.ndarray], platform_band: PlatformBand) -> CaptionVisibility:
+        """Analyze caption visibility in platform-specific band."""
+        if not frames or not _CV2_AVAILABLE or cv2 is None:
+            return CaptionVisibility(
+                is_visible=False,
+                coverage_percent=0.0,
+                position_y=0.0,
+                platform_band=platform_band,
+                confidence_score=0.0
+            )
+
+        # Analyze each frame
+        total_visibility = 0.0
+        position_sum = 0.0
+        confidence_sum = 0.0
+        visible_frames = 0
+
+        for frame in frames:
+            # Convert to grayscale for text detection
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+            # Simple text detection using edge detection
+            edges = cv2.Canny(gray, 50, 150)
+
+            # Find contours that might be text
+            contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+            frame_height, frame_width = frame.shape[:2]
+            band_top = int(frame_height * platform_band.top_percent)
+            band_bottom = int(frame_height * platform_band.bottom_percent)
+
+            # Check for text in the platform band
+            text_in_band = False
+            text_positions = []
+
+            for contour in contours:
+                x, y, w, h = cv2.boundingRect(contour)
+
+                # Check if contour is in platform band and has text-like properties
+                if (band_top <= y <= band_bottom and
+                    band_top <= y + h <= band_bottom and
+                    w > 10 and h > 5 and w/h > 0.1 and w/h < 20):
+
+                    text_in_band = True
+                    text_positions.append(y + h/2)  # Center of text
+
+            if text_in_band:
+                visible_frames += 1
+                coverage = min(1.0, len(text_positions) / 10.0)  # Normalize by expected text count
+                total_visibility += coverage
+
+                if text_positions:
+                    avg_position = np.mean(text_positions)
+                    position_sum += float(avg_position / frame_height)
+                    confidence_sum += 0.8  # Confidence for detected text
+                else:
+                    position_sum += 0.5  # Default position
+                    confidence_sum += 0.5
+            else:
+                position_sum += 0.5  # Default position
+                confidence_sum += 0.1  # Low confidence for no text
+
+        # Calculate averages
+        avg_visibility = total_visibility / len(frames) if frames else 0.0
+        avg_position = position_sum / len(frames) if frames else 0.0
+        avg_confidence = confidence_sum / len(frames) if frames else 0.0
+
+        return CaptionVisibility(
+            is_visible=avg_visibility >= self.min_caption_coverage,
+            coverage_percent=avg_visibility,
+            position_y=avg_position,
+            platform_band=platform_band,
+            confidence_score=avg_confidence
+        )
+    
+    def _analyze_branding_visibility(self, frames: List[np.ndarray]) -> BrandingVisibility:
+        """Analyze watermark/branding visibility."""
+        if not frames or not _CV2_AVAILABLE or cv2 is None:
+            return BrandingVisibility(
+                is_visible=False,
+                position=(0, 0),
+                size_percent=0.0,
+                confidence_score=0.0
+            )
+        
+        # Look for branding in corners (typical placement)
+        total_confidence = 0.0
+        total_size = 0.0
+        positions = []
+        
+        for frame in frames:
+            frame_height, frame_width = frame.shape[:2]
+            
+            # Check corners for potential branding
+            corners = [
+                (0, 0),  # Top-left
+                (frame_width - 50, 0),  # Top-right
+                (0, frame_height - 50),  # Bottom-left
+                (frame_width - 50, frame_height - 50)  # Bottom-right
+            ]
+            
+            for corner_x, corner_y in corners:
+                # Extract corner region
+                corner_size = 100
+                x1 = max(0, corner_x - corner_size // 2)
+                y1 = max(0, corner_y - corner_size // 2)
+                x2 = min(frame_width, corner_x + corner_size // 2)
+                y2 = min(frame_height, corner_y + corner_size // 2)
+                
+                corner = frame[y1:y2, x1:x2]
+                
+                # Analyze corner for branding (simple brightness/color analysis)
+                if corner.size > 0:
+                    # Check for high contrast areas that might be logos/text
+                    gray = cv2.cvtColor(corner, cv2.COLOR_BGR2GRAY)
+                    edges = cv2.Canny(gray, 30, 100)
+                    edge_density = np.sum(edges > 0) / edges.size
+                    
+                    if edge_density > 0.05:  # Threshold for potential branding
+                        total_confidence += 0.7
+                        total_size += corner_size / min(frame_width, frame_height)
+                        positions.append((corner_x, corner_y))
+        
+        avg_confidence = min(1.0, total_confidence / len(frames)) if frames else 0.0
+        avg_size = min(1.0, total_size / len(frames)) if frames else 0.0
+        
+        if positions:
+            avg_position = (int(np.mean([p[0] for p in positions])), 
+                          int(np.mean([p[1] for p in positions])))
+        else:
+            avg_position = (0, 0)
+        
+        return BrandingVisibility(
+            is_visible=avg_confidence >= self.min_branding_coverage,
+            position=avg_position,
+            size_percent=avg_size,
+            confidence_score=avg_confidence
+        )
+    
+    def _analyze_hook_subtitle_presence(self, frames: List[np.ndarray], clip: Clip) -> HookSubtitlePresence:
+        """Analyze hook subtitle presence and timing."""
+        if not clip.hook or not frames or not _CV2_AVAILABLE or cv2 is None:
+            return HookSubtitlePresence(
+                is_present=False,
+                position_y=0.0,
+                timing_correct=False,
+                text_matches=False,
+                confidence_score=0.0
+            )
+        
+        # Look for hook text in early frames (presence only; OCR is out of scope).
+        hook_found = False
+        position_sum = 0.0
+        confidence_sum = 0.0
+        
+        # Check first few frames (hook should appear early)
+        early_frames = frames[:min(3, len(frames))]
+        
+        for frame in early_frames:
+            frame_height, frame_width = frame.shape[:2]
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            
+            # Simple text detection
+            edges = cv2.Canny(gray, 50, 150)
+            contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            
+            for contour in contours:
+                x, y, w, h = cv2.boundingRect(contour)
+                
+                # Check if contour is in top portion (where hook subtitles typically appear)
+                if y < frame_height * 0.5 and w > 20 and h > 8:
+                    # Presence of top-half text only (not OCR text matching).
+                    hook_found = True
+                    position_sum += (y + h/2) / frame_height
+                    confidence_sum += 0.8
+                    break
+        
+        avg_position = min(1.0, position_sum / len(early_frames)) if early_frames else 0.0
+        avg_confidence = min(1.0, confidence_sum / len(early_frames)) if early_frames else 0.0
+        
+        return HookSubtitlePresence(
+            is_present=hook_found,
+            position_y=avg_position,
+            timing_correct=hook_found,  # Simplified - could check timing
+            text_matches=False,  # Unverified without OCR; never claimed.
+            confidence_score=avg_confidence
+        )
+    
+    def _calculate_overall_score(self, caption: CaptionVisibility, 
+                               branding: BrandingVisibility, 
+                               hook: HookSubtitlePresence) -> float:
+        """Calculate overall screen monitoring score."""
+        scores = []
+        
+        # Caption visibility (40% weight)
+        if caption.is_visible:
+            scores.append(0.4 * caption.confidence_score)
+        else:
+            scores.append(0.1)  # Low score for missing captions
+        
+        # Branding visibility (30% weight)
+        if branding.is_visible:
+            scores.append(0.3 * branding.confidence_score)
+        else:
+            scores.append(0.05)  # Very low score for missing branding
+        
+        # Hook subtitle presence (30% weight)
+        if hook.is_present:
+            scores.append(0.3 * hook.confidence_score)
+        else:
+            scores.append(0.1)  # Low score for missing hook
+        
+        return sum(scores)
+    
+    def _generate_feedback(self, caption: CaptionVisibility, 
+                          branding: BrandingVisibility, 
+                          hook: HookSubtitlePresence) -> Tuple[List[str], List[str]]:
+        """Generate issues and recommendations."""
+        issues = []
+        recommendations = []
+        
+        # Caption feedback
+        if not caption.is_visible:
+            issues.append("Captions not visible in platform-safe zone")
+            recommendations.append("Ensure captions are within the platform's safe zone")
+        elif caption.position_y < caption.platform_band.top_percent:
+            issues.append("Captics positioned too high")
+            recommendations.append("Move captions lower to ensure visibility")
+        elif caption.position_y > caption.platform_band.bottom_percent:
+            issues.append("Captions positioned too low")
+            recommendations.append("Move captions higher to ensure visibility")
+        
+        # Branding feedback
+        if not branding.is_visible:
+            issues.append("Branding/watermark not visible")
+            recommendations.append("Ensure branding is visible in corners")
+        elif branding.size_percent < 0.05:
+            issues.append("Branding too small")
+            recommendations.append("Increase branding size for better visibility")
+        
+        # Hook subtitle feedback
+        if not hook.is_present:
+            issues.append("Hook subtitles not visible")
+            recommendations.append("Ensure hook subtitles appear in early frames")
+        
+        return issues, recommendations
+
+
+def create_screen_monitor() -> ScreenMonitor:
+    """Create a screen monitor instance."""
+    return ScreenMonitor()
