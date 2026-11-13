@@ -18,6 +18,19 @@
 
 </div>
 
+<div align="center">
+  <img src="docs/screenshots/01-quick-setup.png" alt="ViralForge Studio — Quick Setup" width="96%" style="border-radius: 12px; border: 1px solid #D4AF37;" />
+</div>
+
+## 📸 Studio Interface Tour
+
+| Quick Setup | Framing & Style |
+|---|---|
+| ![Quick Setup tab](docs/screenshots/01-quick-setup.png) | ![Framing & Style tab](docs/screenshots/02-framing-style.png) |
+| **Quick Setup** | **Framing & Style** |
+| ![Audio & B-Roll tab](docs/screenshots/03-audio-broll.png) | ![Storage & GPU tab](docs/screenshots/04-storage-gpu.png) |
+| **Audio & B-Roll** | **Storage & GPU** |
+
 ## ViralForge vs. the Cloud
 
 ```diff

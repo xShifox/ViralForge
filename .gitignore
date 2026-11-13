@@ -76,3 +76,5 @@ desktop.ini
 .env.*.local
 .claude-flow/
 .mmai/
+!docs/screenshots/*.png
+!docs/screenshots/*.jpg

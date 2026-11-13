@@ -16,6 +16,10 @@
 
 </div>
 
+<div align="center">
+  <img src="https://raw.githubusercontent.com/xShifox/ViralForge/main/docs/screenshots/01-quick-setup.png" alt="ViralForge Studio — Quick Setup" width="96%" />
+</div>
+
 ## 📦 Download
 
 1. Download **`ViralForge-Release.zip`**
