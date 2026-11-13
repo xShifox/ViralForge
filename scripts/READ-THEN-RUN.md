@@ -220,11 +220,11 @@ The one genuine gap. Normally the ~3 GB model is downloaded in the middle of the
 first job, where it looks like the app has hung. Do it deliberately instead:
 
 ```
-%PY% match-my-setup.py --fetch
+%PY% scripts/match-my-setup.py --fetch
 ```
 
 ```
-& $env:PY match-my-setup.py --fetch
+& $env:PY scripts/match-my-setup.py --fetch
 ```
 
 ---
@@ -259,11 +259,11 @@ window. `ViralForge.vbs` starts the same thing with no console.
 With ViralForge still running, in a second terminal:
 
 ```
-%PY% match-my-setup.py
+%PY% scripts/match-my-setup.py
 ```
 
 ```
-& $env:PY match-my-setup.py
+& $env:PY scripts/match-my-setup.py
 ```
 
 It prints what this machine reports, checks the settings that must match, and

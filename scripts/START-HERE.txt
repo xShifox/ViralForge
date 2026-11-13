@@ -60,7 +60,7 @@ THREE THINGS TO INSTALL FIRST
     4. THE SPEECH MODEL  (about 3 GB, once, automatic)
        You do not have to do anything for this, but you can get it out of the
        way first by running this in the same folder:
-         python match-my-setup.py --fetch
+         python scripts/match-my-setup.py --fetch
        Otherwise the first time you process a video, ViralForge downloads the
        model itself and then never again. Do that first run on wifi.
 
@@ -98,7 +98,7 @@ CHECKING IT WORKED
     that the card is doing the work. Hover it for the exact numbers.
 
     Or run this in the same folder:
-        python match-my-setup.py
+        python scripts/match-my-setup.py
     It should end with MATCHED.
 
 

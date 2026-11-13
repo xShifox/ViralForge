@@ -216,8 +216,8 @@ def main() -> int:
     # script happens to be run from the bundle root, and from anywhere else it
     # silently reads nothing - which showed up as five spurious DIFF lines and a
     # MISS speech model on a perfectly healthy install.
-    parser.add_argument("--data", default=str(Path(__file__).resolve().parent / "data"),
-                        help="the data folder (default: next to this script)")
+    parser.add_argument("--data", default=str(Path(__file__).resolve().parents[1] / "data"),
+                        help="the data folder (default: repository root/data)")
     args = parser.parse_args()
     data_dir = Path(args.data)
 
